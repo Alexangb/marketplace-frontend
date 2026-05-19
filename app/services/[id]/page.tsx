@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { servicesApi } from "@/lib/api/servicesApi";
 import { Service } from "@/types/service";
+import ReviewsSection from "@/components/reviews/ReviewsSection";
 import Link from "next/link";
 import { ArrowLeft, Clock, DollarSign, User, AlertCircle } from "lucide-react";
 
@@ -76,8 +77,7 @@ export default function ServiceDetailPage() {
     setBookingLoading(true);
 
     try {
-      const baseUrl =
-        process.env.NEXT_PUBLIC_API_URL || "http://localhost:5204/api";
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL;
       const token = localStorage.getItem("token");
 
       // Formatear hora a HH:mm:ss
@@ -90,7 +90,6 @@ export default function ServiceDetailPage() {
         formattedTime = `${bookingTime}:00:00`;
       }
 
-      // ✅ OPCIÓN 3 (la que funciona): Sin dto, nombres en minúscula
       const requestBody = {
         usuarioId: user.id,
         servicioId: servicioId,
@@ -175,7 +174,9 @@ export default function ServiceDetailPage() {
         </Link>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Columna izquierda - Información del servicio y reseñas */}
           <div className="lg:col-span-2 space-y-6">
+            {/* Info del servicio */}
             <div className="bg-slate-800 rounded-xl p-8 border border-slate-700">
               <h1 className="text-3xl font-bold text-white mb-4">
                 {service.nombre}
@@ -217,8 +218,12 @@ export default function ServiceDetailPage() {
                 )}
               </div>
             </div>
+
+            {/* Sección de reseñas */}
+            <ReviewsSection servicioId={servicioId} />
           </div>
 
+          {/* Columna derecha - Reserva */}
           <div className="lg:col-span-1">
             <div className="bg-slate-800 rounded-xl p-6 border border-slate-700 sticky top-24">
               <h3 className="text-xl font-bold text-white mb-4">
