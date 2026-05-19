@@ -34,6 +34,7 @@ export default function Navbar() {
   const [searchQuery, setSearchQuery] = useState("");
   const [mounted, setMounted] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
   const pathname = usePathname();
   const { user, logout } = useAuth();
 
@@ -56,6 +57,12 @@ export default function Navbar() {
     setImageError(false);
   }, [fotoUrl]);
 
+  // Manejar navegación
+  const handleNavigation = () => {
+    setIsNavigating(true);
+    setTimeout(() => setIsNavigating(false), 500);
+  };
+
   // Si no está montado, mostrar un placeholder para evitar hidratación
   if (!mounted) {
     return (
@@ -75,6 +82,11 @@ export default function Navbar() {
 
   return (
     <>
+      {/* Indicador de navegación */}
+      {isNavigating && (
+        <div className="fixed top-0 left-0 right-0 h-1 bg-blue-600 z-50 animate-pulse" />
+      )}
+
       <nav
         className={`fixed top-0 z-50 w-full transition-all duration-300 ${
           isScrolled
@@ -85,8 +97,12 @@ export default function Navbar() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
             {/* Logo */}
-            <Link href="/" className="flex items-center space-x-2 group">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
+            <Link 
+              href="/" 
+              className="flex items-center space-x-2 group"
+              onClick={handleNavigation}
+            >
+              <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform">
                 <Briefcase className="w-5 h-5 text-white" />
               </div>
               <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
@@ -102,6 +118,7 @@ export default function Navbar() {
                   <Link
                     key={item.name}
                     href={item.href}
+                    onClick={handleNavigation}
                     className={`relative flex items-center space-x-2 text-sm font-medium transition-colors duration-200 ${
                       isActive
                         ? "text-blue-600"
@@ -141,7 +158,6 @@ export default function Navbar() {
 
                   <div className="relative group">
                     <button className="flex items-center space-x-3 p-2 rounded-xl hover:bg-slate-700 transition-colors">
-                      {/* Avatar con foto - usando img normal en lugar de Image */}
                       {fotoUrl && !imageError ? (
                         <img
                           src={fotoUrl}
@@ -166,6 +182,7 @@ export default function Navbar() {
                         <Link
                           href="/perfil"
                           className="flex items-center space-x-3 p-3 rounded-lg hover:bg-slate-700 transition-colors"
+                          onClick={handleNavigation}
                         >
                           <User className="w-4 h-4" />
                           <span className="text-sm">Mi Perfil</span>
@@ -174,6 +191,7 @@ export default function Navbar() {
                         <Link
                           href="/mis-reservas"
                           className="flex items-center space-x-3 p-3 rounded-lg hover:bg-slate-700 transition-colors"
+                          onClick={handleNavigation}
                         >
                           <FileText className="w-4 h-4" />
                           <span className="text-sm">Mis Reservas</span>
@@ -181,6 +199,7 @@ export default function Navbar() {
                         <Link
                           href="/favorites"
                           className="flex items-center space-x-3 p-3 rounded-lg hover:bg-slate-700 transition-colors"
+                          onClick={handleNavigation}
                         >
                           <Star className="w-4 h-4" />
                           <span className="text-sm">Favoritos</span>
@@ -188,6 +207,7 @@ export default function Navbar() {
                         <Link
                           href="/messages"
                           className="flex items-center space-x-3 p-3 rounded-lg hover:bg-slate-700 transition-colors"
+                          onClick={handleNavigation}
                         >
                           <MessageCircle className="w-4 h-4" />
                           <span className="text-sm">Mensajes</span>
@@ -195,13 +215,17 @@ export default function Navbar() {
                         <Link
                           href="/settings"
                           className="flex items-center space-x-3 p-3 rounded-lg hover:bg-slate-700 transition-colors"
+                          onClick={handleNavigation}
                         >
                           <Settings className="w-4 h-4" />
                           <span className="text-sm">Configuración</span>
                         </Link>
                         <hr className="my-2 border-slate-700" />
                         <button
-                          onClick={logout}
+                          onClick={() => {
+                            handleNavigation();
+                            logout();
+                          }}
                           className="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-red-600/10 transition-colors text-red-600"
                         >
                           <LogOut className="w-4 h-4" />
@@ -213,10 +237,10 @@ export default function Navbar() {
                 </>
               ) : (
                 <div className="flex items-center space-x-3">
-                  <Link href="/login" className="btn-secondary">
+                  <Link href="/login" className="btn-secondary" onClick={handleNavigation}>
                     Iniciar Sesión
                   </Link>
-                  <Link href="/register" className="btn-primary">
+                  <Link href="/register" className="btn-primary" onClick={handleNavigation}>
                     Registrarse
                   </Link>
                 </div>
@@ -257,13 +281,42 @@ export default function Navbar() {
               <Link
                 key={item.name}
                 href={item.href}
-                onClick={() => setIsMobileMenuOpen(false)}
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  handleNavigation();
+                }}
                 className="flex items-center space-x-3 p-3 rounded-xl hover:bg-slate-700 transition-colors"
               >
                 <item.icon className="w-5 h-5" />
                 <span>{item.name}</span>
               </Link>
             ))}
+
+            {/* Mobile Auth Links (si no está logueado) */}
+            {!user && (
+              <div className="pt-4 border-t border-slate-700">
+                <Link
+                  href="/login"
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    handleNavigation();
+                  }}
+                  className="flex items-center justify-center w-full p-3 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+                >
+                  Iniciar Sesión
+                </Link>
+                <Link
+                  href="/register"
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    handleNavigation();
+                  }}
+                  className="flex items-center justify-center w-full p-3 rounded-xl mt-2 bg-slate-700 text-white hover:bg-slate-600 transition-colors"
+                >
+                  Registrarse
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       )}
