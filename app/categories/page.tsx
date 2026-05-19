@@ -13,6 +13,13 @@ interface Category {
   estado: boolean;
 }
 
+interface Service {
+  id: number;
+  nombre: string;
+  categoriaId: number;
+  precio: number;
+}
+
 interface CategoryWithCount extends Category {
   serviciosCount: number;
 }
@@ -27,21 +34,15 @@ export default function CategoriesPage() {
 
   const loadCategoriesWithCount = async () => {
     try {
-      // Obtener todas las categorías
-      const allCategories = await categoriesApi.getAll();
+      const allCategories: Category[] = await categoriesApi.getAll();
+      const services: Service[] = await servicesApi.getAllActive();
       
-      // Obtener servicios para contar por categoría
-      const services = await servicesApi.getAllActive();
-      
-      // Agregar conteo de servicios a cada categoría
-      const categoriesWithCount = allCategories.map(cat => ({
+      const categoriesWithCount: CategoryWithCount[] = allCategories.map((cat) => ({
         ...cat,
-        serviciosCount: services.filter(s => s.categoriaId === cat.id).length
+        serviciosCount: services.filter((s) => s.categoriaId === cat.id).length
       }));
       
-      // Ordenar por cantidad de servicios (descendente)
       categoriesWithCount.sort((a, b) => b.serviciosCount - a.serviciosCount);
-      
       setCategories(categoriesWithCount);
     } catch (error) {
       console.error('Error loading categories:', error);
@@ -61,7 +62,6 @@ export default function CategoriesPage() {
   return (
     <div className="min-h-screen bg-slate-900 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
         <div className="mb-8">
           <Link href="/" className="inline-flex items-center space-x-2 text-slate-400 hover:text-white mb-4">
             <ArrowLeft className="h-4 w-4" />
@@ -71,7 +71,6 @@ export default function CategoriesPage() {
           <p className="text-slate-400 mt-1">Explora servicios por categoría</p>
         </div>
 
-        {/* Categories Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {categories.map((category) => (
             <Link
@@ -103,7 +102,6 @@ export default function CategoriesPage() {
           ))}
         </div>
 
-        {/* Empty state */}
         {categories.length === 0 && (
           <div className="text-center py-12 bg-slate-800 rounded-xl">
             <Tag className="h-16 w-16 text-slate-600 mx-auto mb-4" />
