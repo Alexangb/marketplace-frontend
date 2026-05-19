@@ -4,12 +4,10 @@ import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
 import { 
   Mail, 
   Lock, 
   User, 
-  ArrowLeft, 
   CheckCircle, 
   AlertCircle,
   Briefcase,
@@ -60,7 +58,7 @@ export default function RegisterPage() {
     if (!formData.password) {
       newErrors.password = 'La contraseña es requerida';
     } else if (formData.password.length < 6) {
-      newErrors.password = 'La contraseña debe tener al least 6 caracteres';
+      newErrors.password = 'La contraseña debe tener al menos 6 caracteres';
     } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.password)) {
       newErrors.password = 'La contraseña debe tener mayúscula, minúscula y número';
     }
@@ -108,16 +106,11 @@ export default function RegisterPage() {
       {/* Background gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-secondary/5 to-accent/5" />
       
-      {/* Animated background shapes */}
+      {/* Animated background shapes (con CSS puro, sin motion) */}
       <div className="absolute top-0 left-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse-slow" />
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-secondary/10 rounded-full blur-3xl animate-pulse-slow" />
       
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="max-w-md w-full relative z-10"
-      >
+      <div className="max-w-md w-full relative z-10">
         <Card className="p-8">
           {/* Header */}
           <div className="text-center mb-8">
@@ -285,7 +278,7 @@ export default function RegisterPage() {
             </div>
           </div>
         </Card>
-      </motion.div>
+      </div>
     </div>
   );
 }

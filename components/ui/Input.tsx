@@ -1,7 +1,6 @@
 'use client';
 
 import { forwardRef } from 'react';
-import { motion } from 'framer-motion';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -36,13 +35,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           />
         </div>
         {error && (
-          <motion.p
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-sm text-danger"
-          >
-            {error}
-          </motion.p>
+          <p className="text-sm text-danger">{error}</p>
         )}
       </div>
     );
