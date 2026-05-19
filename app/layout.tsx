@@ -3,6 +3,7 @@ import './globals.css';
 import { AuthProvider } from '@/hooks/useAuth';
 import { Toaster } from 'react-hot-toast';
 import Navbar from '@/components/layout/Navbar';
+import BottomNav from '@/components/layout/BottomNav';
 
 export const metadata: Metadata = {
   title: 'ServiceHub - Marketplace de Servicios',
@@ -16,12 +17,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es" className="dark">
-      <body className="bg-dark-bg antialiased">
+      <body className="bg-slate-900 antialiased pb-16 md:pb-0">
         <AuthProvider>
           <Navbar />
           <main className="pt-20">
             {children}
           </main>
+          <BottomNav />
           <Toaster 
             position="top-right"
             toastOptions={{

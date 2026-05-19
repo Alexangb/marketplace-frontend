@@ -164,14 +164,7 @@ export default function LoginPage() {
         </form>
 
         {/* Datos de prueba */}
-        <div className="mt-6 p-4 bg-slate-900/50 rounded-lg border border-slate-700">
-          <p className="text-xs text-slate-400 text-center mb-2">📝 Datos de prueba:</p>
-          <div className="text-xs text-slate-500 space-y-1 text-center">
-            <p>Admin: admin@marketplace.com / Admin123</p>
-            <p>Prestador: juan@example.com / Admin123</p>
-            <p>Cliente: maria@example.com / Admin123</p>
-          </div>
-        </div>
+        
       </div>
     </div>
   );
