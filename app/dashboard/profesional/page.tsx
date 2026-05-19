@@ -105,7 +105,7 @@ export default function ProfessionalDashboard() {
   const loadCategories = async () => {
     try {
       const baseUrl =
-        process.env.NEXT_PUBLIC_API_URL || "http://localhost:5204/api";
+        process.env.NEXT_PUBLIC_API_URL || "https://marketplace-api-7hhq.onrender.com/api";
       const response = await fetch(`${baseUrl}/categorias`);
       const result = await response.json();
       setCategories(result.data || []);
