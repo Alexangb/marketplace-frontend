@@ -41,9 +41,8 @@ export default function Navbar() {
   const pathname = usePathname();
   const { user, logout } = useAuth();
 
-  const fotoUrl = user?.fotoUrl
-    ? `${process.env.NEXT_PUBLIC_API_URL?.replace("/api", "")}${user.fotoUrl}`
-    : null;
+  // ✅ CORREGIDO: user.fotoUrl ya viene completa desde useAuth (Cloudinary URL)
+  const fotoUrl = user?.fotoUrl;
 
   useEffect(() => {
     setMounted(true);
@@ -226,7 +225,7 @@ export default function Navbar() {
                             </Link>
                             {user.rol === "Prestador" && (
                               <Link
-                                href="/dashboard/profesional"
+                                href="dashboard/profesional"
                                 className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-slate-700 transition-colors"
                                 onClick={() => {
                                   setIsProfileMenuOpen(false);

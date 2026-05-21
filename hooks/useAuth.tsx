@@ -56,13 +56,13 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const getFullPhotoUrl = (fotoUrl: string | null | undefined): string | null => {
   if (!fotoUrl) return null;
   
-  // Si ya es una URL completa (http o https), devolverla
-  if (fotoUrl.startsWith("http")) {
+  // Si ya es una URL completa (http o https - como Cloudinary), devolverla directamente
+  if (fotoUrl.startsWith("http://") || fotoUrl.startsWith("https://")) {
     return fotoUrl;
   }
   
-  // Si es una ruta relativa, construir la URL completa con la API
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace("/api", "") || "https://marketplace-api-7hhq.onrender.com/api";
+  // Si es una ruta relativa, construir la URL completa con la API local
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace("/api", "") || "http://localhost:5204";
   return `${baseUrl}${fotoUrl}`;
 };
 
@@ -74,10 +74,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (storedUser) {
         try {
           const parsedUser = JSON.parse(storedUser) as User;
-          // Asegurar que la foto tenga URL completa
-          if (parsedUser.fotoUrl) {
-            parsedUser.fotoUrl = getFullPhotoUrl(parsedUser.fotoUrl);
-          }
           return parsedUser;
         } catch (error) {
           console.error("Error parsing stored user:", error);
@@ -186,7 +182,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const response = await authApi.updateProfile(data);
       if (response.success && user) {
         const updatedUser = { ...user, ...response.data } as User;
-        // Asegurar URL completa de la foto
         if (updatedUser.fotoUrl) {
           updatedUser.fotoUrl = getFullPhotoUrl(updatedUser.fotoUrl);
         }
@@ -212,10 +207,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const response = await authApi.uploadPhoto(file);
       if (response.success && user) {
-        // Obtener la URL relativa de la foto
-        const relativeUrl = response.data;
-        // Convertir a URL completa
-        const fullPhotoUrl = getFullPhotoUrl(relativeUrl);
+        // La respuesta puede ser URL relativa o absoluta
+        const photoUrl = response.data;
+        const fullPhotoUrl = getFullPhotoUrl(photoUrl);
         const updatedUser = { ...user, fotoUrl: fullPhotoUrl };
         setUser(updatedUser);
         localStorage.setItem("user", JSON.stringify(updatedUser));

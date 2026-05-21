@@ -1,12 +1,21 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import Link from 'next/link';
-import { 
-  User, Mail, Phone, MapPin, FileText, Camera, Save, Lock, 
-  AlertCircle, CheckCircle, ArrowLeft
-} from 'lucide-react';
+import { useEffect, useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import Link from "next/link";
+import {
+  User,
+  Mail,
+  Phone,
+  MapPin,
+  FileText,
+  Camera,
+  Save,
+  Lock,
+  AlertCircle,
+  CheckCircle,
+  ArrowLeft,
+} from "lucide-react";
 
 export default function PerfilPage() {
   const { user, updateProfile, uploadPhoto, changePassword } = useAuth();
@@ -15,31 +24,29 @@ export default function PerfilPage() {
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [successMessage, setSuccessMessage] = useState('');
-  const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState("");
+  const [error, setError] = useState("");
 
   // Formulario de perfil
   const [formData, setFormData] = useState({
-    nombre: '',
-    apellido: '',
-    email: '',
-    telefono: '',
-    direccion: '',
-    biografia: '',
+    nombre: "",
+    apellido: "",
+    email: "",
+    telefono: "",
+    direccion: "",
+    biografia: "",
   });
 
   // Formulario de cambio de contraseña
   const [passwordData, setPasswordData] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: '',
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
   });
   const [passwordErrors, setPasswordErrors] = useState<Record<string, string>>({});
 
-  // URL completa para la foto
-  const fotoUrl = user?.fotoUrl 
-    ? `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${user.fotoUrl}`
-    : null;
+  // ✅ CORREGIDO: user.fotoUrl ya viene completa desde Cloudinary
+  const fotoUrl = user?.fotoUrl;
 
   useEffect(() => {
     setMounted(true);
@@ -48,12 +55,12 @@ export default function PerfilPage() {
   useEffect(() => {
     if (user && mounted) {
       setFormData({
-        nombre: user.nombre || '',
-        apellido: (user as any).apellido || '',
-        email: user.email || '',
-        telefono: (user as any).telefono || '',
-        direccion: (user as any).direccion || '',
-        biografia: (user as any).biografia || '',
+        nombre: user.nombre || "",
+        apellido: (user as any).apellido || "",
+        email: user.email || "",
+        telefono: (user as any).telefono || "",
+        direccion: (user as any).direccion || "",
+        biografia: (user as any).biografia || "",
       });
     }
   }, [user, mounted]);
@@ -68,48 +75,45 @@ export default function PerfilPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
-    
+    setError("");
+
     try {
-      // Filtrar campos vacíos y enviar solo los que tienen valor
       const dataToSend: any = {};
-      
-      if (formData.nombre && formData.nombre.trim() !== '') {
+
+      if (formData.nombre && formData.nombre.trim() !== "") {
         dataToSend.nombre = formData.nombre.trim();
       }
-      if (formData.apellido && formData.apellido.trim() !== '') {
+      if (formData.apellido && formData.apellido.trim() !== "") {
         dataToSend.apellido = formData.apellido.trim();
       }
-      if (formData.email && formData.email.trim() !== '') {
+      if (formData.email && formData.email.trim() !== "") {
         dataToSend.email = formData.email.trim();
       }
-      if (formData.telefono && formData.telefono.trim() !== '') {
+      if (formData.telefono && formData.telefono.trim() !== "") {
         dataToSend.telefono = formData.telefono.trim();
       } else {
-        dataToSend.telefono = null; // Enviar null si está vacío
+        dataToSend.telefono = null;
       }
-      if (formData.direccion && formData.direccion.trim() !== '') {
+      if (formData.direccion && formData.direccion.trim() !== "") {
         dataToSend.direccion = formData.direccion.trim();
       } else {
         dataToSend.direccion = null;
       }
-      if (formData.biografia && formData.biografia.trim() !== '') {
+      if (formData.biografia && formData.biografia.trim() !== "") {
         dataToSend.biografia = formData.biografia.trim();
       } else {
         dataToSend.biografia = null;
       }
-      
+
       await updateProfile(dataToSend);
-      setSuccessMessage('Perfil actualizado exitosamente');
+      setSuccessMessage("Perfil actualizado exitosamente");
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 3000);
-      
-      // Recargar la página para mostrar los cambios
       setTimeout(() => {
         window.location.reload();
       }, 1000);
     } catch (err: any) {
-      setError(err.message || 'Error al actualizar el perfil');
+      setError(err.message || "Error al actualizar el perfil");
     } finally {
       setLoading(false);
     }
@@ -119,30 +123,17 @@ export default function PerfilPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
-    if (!allowedTypes.includes(file.type)) {
-      setError('Formato no permitido. Use JPG, PNG o GIF');
-      return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      setError('La imagen no puede superar los 5MB');
-      return;
-    }
-
     setUploadingPhoto(true);
-    setError('');
-    
+    setError("");
+
     try {
       await uploadPhoto(file);
-      setSuccessMessage('Foto de perfil actualizada');
+      setSuccessMessage("Foto de perfil actualizada");
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 3000);
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
     } catch (err: any) {
-      setError(err.message || 'Error al subir la foto');
+      const errorMsg = err.response?.data?.message || err.message || "Error al subir la foto";
+      setError(errorMsg);
     } finally {
       setUploadingPhoto(false);
     }
@@ -150,21 +141,21 @@ export default function PerfilPage() {
 
   const validatePasswordForm = () => {
     const errors: Record<string, string> = {};
-    
+
     if (!passwordData.currentPassword) {
-      errors.currentPassword = 'La contraseña actual es requerida';
+      errors.currentPassword = "La contraseña actual es requerida";
     }
     if (!passwordData.newPassword) {
-      errors.newPassword = 'La nueva contraseña es requerida';
+      errors.newPassword = "La nueva contraseña es requerida";
     } else if (passwordData.newPassword.length < 6) {
-      errors.newPassword = 'La contraseña debe tener al menos 6 caracteres';
+      errors.newPassword = "La contraseña debe tener al menos 6 caracteres";
     } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(passwordData.newPassword)) {
-      errors.newPassword = 'Debe tener mayúscula, minúscula y número';
+      errors.newPassword = "Debe tener mayúscula, minúscula y número";
     }
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      errors.confirmPassword = 'Las contraseñas no coinciden';
+      errors.confirmPassword = "Las contraseñas no coinciden";
     }
-    
+
     setPasswordErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -172,19 +163,23 @@ export default function PerfilPage() {
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validatePasswordForm()) return;
-    
+
     setLoading(true);
-    setError('');
-    
+    setError("");
+
     try {
       await changePassword(passwordData);
-      setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      setPasswordData({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
       setShowPasswordModal(false);
-      setSuccessMessage('Contraseña cambiada exitosamente');
+      setSuccessMessage("Contraseña cambiada exitosamente");
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 3000);
     } catch (err: any) {
-      setError(err.message || 'Error al cambiar la contraseña');
+      setError(err.message || "Error al cambiar la contraseña");
     } finally {
       setLoading(false);
     }
@@ -258,7 +253,7 @@ export default function PerfilPage() {
                       </span>
                     </div>
                   )}
-                  
+
                   <label className="absolute bottom-0 right-0 p-2 bg-blue-600 rounded-full cursor-pointer hover:bg-blue-700 transition-colors">
                     <Camera className="h-4 w-4 text-white" />
                     <input
@@ -270,15 +265,17 @@ export default function PerfilPage() {
                     />
                   </label>
                 </div>
-                
+
                 {uploadingPhoto && (
                   <div className="mt-2 text-sm text-blue-500">Subiendo foto...</div>
                 )}
-                
+
                 <h2 className="mt-4 text-xl font-semibold text-white">
                   {user.nombre} {(user as any).apellido}
                 </h2>
-                <p className="text-slate-400 text-sm">{user.rol === 'Prestador' ? 'Profesional' : 'Cliente'}</p>
+                <p className="text-slate-400 text-sm">
+                  {user.rol === "Prestador" ? "Profesional" : "Cliente"}
+                </p>
               </div>
 
               <div className="mt-6 pt-6 border-t border-slate-700">
@@ -300,11 +297,13 @@ export default function PerfilPage() {
                 <User className="h-5 w-5 mr-2 text-blue-500" />
                 Información Personal
               </h3>
-              
+
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1">Nombre *</label>
+                    <label className="block text-sm font-medium text-slate-300 mb-1">
+                      Nombre *
+                    </label>
                     <input
                       type="text"
                       name="nombre"
@@ -315,7 +314,9 @@ export default function PerfilPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1">Apellido</label>
+                    <label className="block text-sm font-medium text-slate-300 mb-1">
+                      Apellido
+                    </label>
                     <input
                       type="text"
                       name="apellido"
@@ -408,9 +409,11 @@ export default function PerfilPage() {
           <div className="bg-slate-800 rounded-xl max-w-md w-full p-6 border border-slate-700">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-2xl font-bold text-white">Cambiar Contraseña</h2>
-              <button onClick={() => setShowPasswordModal(false)} className="text-slate-400 hover:text-white">✕</button>
+              <button onClick={() => setShowPasswordModal(false)} className="text-slate-400 hover:text-white">
+                ✕
+              </button>
             </div>
-            
+
             <form onSubmit={handlePasswordChange} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-1">Contraseña actual *</label>
@@ -422,7 +425,7 @@ export default function PerfilPage() {
                 />
                 {passwordErrors.currentPassword && <p className="text-red-500 text-xs mt-1">{passwordErrors.currentPassword}</p>}
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-1">Nueva contraseña *</label>
                 <input
@@ -433,7 +436,7 @@ export default function PerfilPage() {
                 />
                 {passwordErrors.newPassword && <p className="text-red-500 text-xs mt-1">{passwordErrors.newPassword}</p>}
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-1">Confirmar nueva contraseña *</label>
                 <input
@@ -444,10 +447,10 @@ export default function PerfilPage() {
                 />
                 {passwordErrors.confirmPassword && <p className="text-red-500 text-xs mt-1">{passwordErrors.confirmPassword}</p>}
               </div>
-              
+
               <div className="flex space-x-3 pt-4">
                 <button type="submit" disabled={loading} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg transition-colors disabled:opacity-50">
-                  {loading ? 'Guardando...' : 'Cambiar Contraseña'}
+                  {loading ? "Guardando..." : "Cambiar Contraseña"}
                 </button>
                 <button type="button" onClick={() => setShowPasswordModal(false)} className="flex-1 bg-slate-700 hover:bg-slate-600 text-white py-2 rounded-lg transition-colors">
                   Cancelar
