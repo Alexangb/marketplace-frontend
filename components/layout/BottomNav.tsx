@@ -26,7 +26,7 @@ export default function BottomNav() {
 
   // Si es profesional, agregar dashboard
   if (user?.rol === 'Prestador') {
-    navItems.splice(2, 0, { name: 'Dashboard', href: '/professional/dashboard', icon: Briefcase });
+    navItems.splice(2, 0, { name: 'Dashboard', href: '/dashboard/profesional', icon: Briefcase });
   }
 
   // Si es cliente, agregar reservas
