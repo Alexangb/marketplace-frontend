@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
@@ -36,11 +36,13 @@ export default function Navbar() {
   const [mounted, setMounted] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   const { user, logout } = useAuth();
 
-  const fotoUrl = user?.fotoUrl 
-    ? `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${user.fotoUrl}`
+  const fotoUrl = user?.fotoUrl
+    ? `${process.env.NEXT_PUBLIC_API_URL?.replace("/api", "")}${user.fotoUrl}`
     : null;
 
   useEffect(() => {
@@ -56,9 +58,27 @@ export default function Navbar() {
     setImageError(false);
   }, [fotoUrl]);
 
+  // Cerrar menú al hacer clic fuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        profileMenuRef.current &&
+        !profileMenuRef.current.contains(event.target as Node)
+      ) {
+        setIsProfileMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const handleNavigation = () => {
     setIsNavigating(true);
     setTimeout(() => setIsNavigating(false), 500);
+  };
+
+  const toggleProfileMenu = () => {
+    setIsProfileMenuOpen(!isProfileMenuOpen);
   };
 
   if (!mounted) {
@@ -94,9 +114,9 @@ export default function Navbar() {
       >
         <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6">
           <div className="flex items-center justify-between h-14">
-            {/* Logo - más compacto */}
-            <Link 
-              href="/" 
+            {/* Logo */}
+            <Link
+              href="/"
               className="flex items-center space-x-1.5 shrink-0"
               onClick={handleNavigation}
             >
@@ -108,7 +128,7 @@ export default function Navbar() {
               </span>
             </Link>
 
-            {/* Desktop Navigation - oculto en móvil */}
+            {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-1">
               {navItems.map((item) => {
                 const isActive = pathname === item.href;
@@ -132,9 +152,9 @@ export default function Navbar() {
               })}
             </div>
 
-            {/* Right Section - compacto y sin desborde */}
+            {/* Right Section */}
             <div className="flex items-center space-x-1 sm:space-x-2">
-              {/* Search button - solo icono */}
+              {/* Search button */}
               <button className="p-1.5 rounded-lg hover:bg-slate-800 transition-colors">
                 <Search className="w-4 h-4 text-slate-400" />
               </button>
@@ -146,8 +166,12 @@ export default function Navbar() {
                     <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-red-500 rounded-full" />
                   </button>
 
-                  <div className="relative group">
-                    <button className="flex items-center space-x-1.5 p-0.5 rounded-full hover:bg-slate-800 transition-colors">
+                  {/* Menú de perfil - con clic */}
+                  <div className="relative" ref={profileMenuRef}>
+                    <button
+                      onClick={toggleProfileMenu}
+                      className="flex items-center space-x-1.5 p-0.5 rounded-full hover:bg-slate-800 transition-colors"
+                    >
                       {fotoUrl && !imageError ? (
                         <img
                           src={fotoUrl}
@@ -164,19 +188,84 @@ export default function Navbar() {
                         </div>
                       )}
                     </button>
+
+                    {/* Menú desplegable */}
+                    {isProfileMenuOpen && (
+                      <div className="absolute right-0 mt-2 w-56 bg-slate-800 border border-slate-700 rounded-xl shadow-xl z-50">
+                        <div className="p-1">
+                          <div className="px-3 py-2 border-b border-slate-700">
+                            <p className="text-sm font-medium text-white">
+                              {user.nombre}
+                            </p>
+                            <p className="text-xs text-slate-400 truncate">
+                              {user.email}
+                            </p>
+                          </div>
+                          <div className="py-1">
+                            <Link
+                              href="/perfil"
+                              className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-slate-700 transition-colors"
+                              onClick={() => {
+                                setIsProfileMenuOpen(false);
+                                handleNavigation();
+                              }}
+                            >
+                              <User className="w-4 h-4 text-slate-400" />
+                              <span className="text-sm">Mi Perfil</span>
+                            </Link>
+                            <Link
+                              href="/mis-reservas"
+                              className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-slate-700 transition-colors"
+                              onClick={() => {
+                                setIsProfileMenuOpen(false);
+                                handleNavigation();
+                              }}
+                            >
+                              <FileText className="w-4 h-4 text-slate-400" />
+                              <span className="text-sm">Mis Reservas</span>
+                            </Link>
+                            {user.rol === "Prestador" && (
+                              <Link
+                                href="/dashboard/profesional"
+                                className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-slate-700 transition-colors"
+                                onClick={() => {
+                                  setIsProfileMenuOpen(false);
+                                  handleNavigation();
+                                }}
+                              >
+                                <Briefcase className="w-4 h-4 text-slate-400" />
+                                <span className="text-sm">Dashboard</span>
+                              </Link>
+                            )}
+                            <hr className="my-1 border-slate-700" />
+                            <button
+                              onClick={() => {
+                                setIsProfileMenuOpen(false);
+                                handleNavigation();
+                                logout();
+                              }}
+                              className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-red-600/10 transition-colors text-red-500"
+                            >
+                              <LogOut className="w-4 h-4" />
+                              <span className="text-sm">Cerrar Sesión</span>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               ) : (
                 <div className="flex items-center space-x-1">
-                  <Link 
-                    href="/login" 
+                  <Link
+                    href="/login"
                     className="px-2.5 py-1.5 rounded-lg text-xs sm:text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition-colors"
                     onClick={handleNavigation}
                   >
                     Ingresar
                   </Link>
-                  <Link 
-                    href="/register" 
+                  <Link
+                    href="/register"
                     className="px-2.5 py-1.5 rounded-lg text-xs sm:text-sm font-medium bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:shadow-md transition-all"
                     onClick={handleNavigation}
                   >
@@ -201,11 +290,10 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* Mobile Menu - compacto */}
+      {/* Mobile Menu */}
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-40 bg-slate-900 pt-14 px-4 md:hidden">
           <div className="flex flex-col space-y-1 mt-2">
-            {/* Mobile Navigation */}
             {navItems.map((item) => (
               <Link
                 key={item.name}

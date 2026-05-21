@@ -52,6 +52,20 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Helper para obtener URL completa de la foto
+const getFullPhotoUrl = (fotoUrl: string | null | undefined): string | null => {
+  if (!fotoUrl) return null;
+  
+  // Si ya es una URL completa (http o https), devolverla
+  if (fotoUrl.startsWith("http")) {
+    return fotoUrl;
+  }
+  
+  // Si es una ruta relativa, construir la URL completa con la API
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace("/api", "") || "https://marketplace-api-7hhq.onrender.com/api";
+  return `${baseUrl}${fotoUrl}`;
+};
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Inicializar estado de forma síncrona
   const [user, setUser] = useState<User | null>(() => {
@@ -59,7 +73,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const storedUser = localStorage.getItem("user");
       if (storedUser) {
         try {
-          return JSON.parse(storedUser) as User;
+          const parsedUser = JSON.parse(storedUser) as User;
+          // Asegurar que la foto tenga URL completa
+          if (parsedUser.fotoUrl) {
+            parsedUser.fotoUrl = getFullPhotoUrl(parsedUser.fotoUrl);
+          }
+          return parsedUser;
         } catch (error) {
           console.error("Error parsing stored user:", error);
           localStorage.removeItem("user");
@@ -93,12 +112,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           fotoUrl,
         } = response.data;
 
+        // Convertir la URL de la foto a URL completa
+        const fullFotoUrl = getFullPhotoUrl(fotoUrl);
+
         const userData: User = {
           id: usuarioId,
           nombre: nombre,
           email: userEmail,
           rol: rol,
-          fotoUrl: fotoUrl || null,
+          fotoUrl: fullFotoUrl,
         };
 
         localStorage.setItem("token", token);
@@ -164,6 +186,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const response = await authApi.updateProfile(data);
       if (response.success && user) {
         const updatedUser = { ...user, ...response.data } as User;
+        // Asegurar URL completa de la foto
+        if (updatedUser.fotoUrl) {
+          updatedUser.fotoUrl = getFullPhotoUrl(updatedUser.fotoUrl);
+        }
         setUser(updatedUser);
         localStorage.setItem("user", JSON.stringify(updatedUser));
         toast.success("Perfil actualizado");
@@ -186,14 +212,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const response = await authApi.uploadPhoto(file);
       if (response.success && user) {
-        // La URL que viene de la API es algo como "/perfiles/archivo.jpg"
-        // Pero Next.js necesita que esté en public o usar una URL completa
-        const photoUrl = response.data;
-        const updatedUser = { ...user, fotoUrl: photoUrl };
+        // Obtener la URL relativa de la foto
+        const relativeUrl = response.data;
+        // Convertir a URL completa
+        const fullPhotoUrl = getFullPhotoUrl(relativeUrl);
+        const updatedUser = { ...user, fotoUrl: fullPhotoUrl };
         setUser(updatedUser);
         localStorage.setItem("user", JSON.stringify(updatedUser));
         toast.success("Foto actualizada");
-        return response.data;
       }
     } catch (error) {
       const axiosError = error as {

@@ -6,7 +6,7 @@ export async function GET(
 ) {
   try {
     const { filename } = params;
-    const apiUrl = `http://localhost:5204/perfiles/${filename}`;
+    const apiUrl = `https://marketplace-api-7hhq.onrender.com/api/perfiles/${filename}`;
     
     const response = await fetch(apiUrl);
     
